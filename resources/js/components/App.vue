@@ -7,7 +7,8 @@
                 label-idle="Click or drag image here"
                 @init="filepondInitialized"
                 @processfile="handleProcessedFile"
-                accepted-file-types="image/*"
+                accepted-file-types="image/jpg, image/jpeg, image/png"
+                max-file-size="1MB"
             />
         </div>
 
@@ -27,20 +28,25 @@
 // Import FilePond
 import vueFilePond, {setOptions} from 'vue-filepond';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
+import FilePondPluginFileValidateSize from 'filepond-plugin-file-validate-size';
 import "filepond/dist/filepond.min.css";
 
+let serverMessage = {};
 setOptions({
     server: {
         process: {
             url: '/upload',
+            onerror: (response) => serverMessage = JSON.parse(response),
             headers: {
                 'X-CSRF-TOKEN': document.head.querySelector('meta[name="csrf_token"]').content
             }
         }
-    }
+    },
+
+    labelFileProcessingError: () => serverMessage.error,
 });
 
-const FilePond = vueFilePond(FilePondPluginFileValidateType);
+const FilePond = vueFilePond(FilePondPluginFileValidateType, FilePondPluginFileValidateSize);
 
 export default {
     components: {
